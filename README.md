@@ -13,6 +13,14 @@ A premium personal project archive web application built with React, TypeScript,
 
 ## ✨ Features
 
+### Authentication
+- **Simple Login System**: Email/password authentication
+- **User Registration**: Create new accounts
+- **Protected Routes**: All pages require authentication
+- **Persistent Sessions**: Stay logged in across browser sessions
+- **User Profile**: Display user info in navbar
+- **Logout**: Secure sign out
+
 ### Project Management
 - **Full CRUD**: Add, edit, delete projects with form validation
 - **Rich Metadata**: Store GitHub URLs, live URLs, documentation links, screenshots, tags, technologies
@@ -68,6 +76,16 @@ npm run dev
 ```
 
 The app will open at `http://localhost:5173`
+
+### First Time Setup
+
+1. You'll be redirected to the login page
+2. Click "Sign up" to create a new account
+3. Enter your name, email, and password (minimum 6 characters)
+4. You'll be automatically logged in and redirected to the dashboard
+5. Start adding your projects!
+
+**Note**: All data is stored in your browser's localStorage. Make sure to use the Export feature regularly to backup your projects.
 
 ---
 
@@ -125,6 +143,29 @@ npm run preview
 ```
 
 ---
+
+## 🔐 Authentication
+
+The app uses a simple client-side authentication system:
+
+- **No external services required**: Everything runs in your browser
+- **LocalStorage based**: User accounts are stored locally
+- **Password protection**: Minimum 6 characters
+- **Session persistence**: Stay logged in until you explicitly logout
+
+### How It Works
+
+1. **Registration**: Create an account with name, email, and password
+2. **Login**: Sign in with your email and password
+3. **Sessions**: Your login state is saved in localStorage
+4. **Logout**: Click the logout button in the navbar
+
+### Important Notes
+
+- User data is stored in your browser only
+- Clearing browser data will remove all accounts
+- Use the Export feature to backup your projects regularly
+- For production use with multiple devices, consider integrating Firebase or Supabase
 
 ## 📦 Deployment
 

@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Search, Plus, Home, FolderOpen, Heart, Settings, Code } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X, Plus, Home, FolderOpen, Heart, Settings, Code, LogOut, User } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
-interface NavbarProps {
-  onSearchOpen: () => void;
-}
-
-export default function Navbar({ onSearchOpen }: NavbarProps) {
+export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -20,6 +19,11 @@ export default function Navbar({ onSearchOpen }: NavbarProps) {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location]);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const navLinks = [
     { path: '/', label: 'HOME', icon: Home },
@@ -64,13 +68,23 @@ export default function Navbar({ onSearchOpen }: NavbarProps) {
 
             {/* Desktop Actions */}
             <div className="hidden lg:flex items-center gap-2">
-              <button
-                onClick={onSearchOpen}
-                className="p-2.5 border-2 border-[#111] hover:bg-[#F7F8FC] transition-colors"
-                aria-label="Search projects"
-              >
-                <Search size={16} />
-              </button>
+              {user && (
+                <>
+                  <div className="flex items-center gap-2 px-3 py-1.5">
+                    <div className="w-8 h-8 bg-[#2563EB] text-white flex items-center justify-center text-xs font-bold rounded-full">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-sm font-semibold text-gray-900">{user.name}</span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-gray-600 hover:text-red-600 transition-colors"
+                  >
+                    <LogOut size={16} />
+                    LOGOUT
+                  </button>
+                </>
+              )}
               <Link
                 to="/add"
                 className="flex items-center gap-2 px-4 py-2.5 bg-[#2563EB] text-white text-xs font-bold tracking-wider border-2 border-[#111] shadow-[3px_3px_0px_#111] hover:shadow-[5px_5px_0px_#111] hover:-translate-y-0.5 transition-all btn-press"
@@ -95,6 +109,17 @@ export default function Navbar({ onSearchOpen }: NavbarProps) {
         {mobileMenuOpen && (
           <div className="lg:hidden border-t-2 border-[#111] bg-white animate-slide-down">
             <div className="px-4 py-4 space-y-1">
+              {user && (
+                <div className="flex items-center gap-3 px-4 py-3 mb-2 border-b border-gray-200">
+                  <div className="w-10 h-10 bg-[#2563EB] text-white flex items-center justify-center text-sm font-bold rounded-full">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">{user.name}</div>
+                    <div className="text-xs text-gray-500">{user.email}</div>
+                  </div>
+                </div>
+              )}
               {navLinks.map(link => {
                 const Icon = link.icon;
                 return (
@@ -112,13 +137,6 @@ export default function Navbar({ onSearchOpen }: NavbarProps) {
                   </Link>
                 );
               })}
-              <button
-                onClick={onSearchOpen}
-                className="flex items-center gap-3 px-4 py-3 text-sm font-semibold tracking-wider text-[#555] hover:text-[#111] hover:bg-[#F7F8FC] w-full"
-              >
-                <Search size={16} />
-                SEARCH
-              </button>
               <Link
                 to="/add"
                 className="flex items-center justify-center gap-2 px-4 py-3 bg-[#2563EB] text-white text-sm font-bold tracking-wider mt-3"
@@ -126,6 +144,15 @@ export default function Navbar({ onSearchOpen }: NavbarProps) {
                 <Plus size={16} />
                 ADD PROJECT
               </Link>
+              {user && (
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-semibold tracking-wider text-red-600 hover:bg-red-50 w-full mt-2"
+                >
+                  <LogOut size={16} />
+                  LOGOUT
+                </button>
+              )}
             </div>
           </div>
         )}
