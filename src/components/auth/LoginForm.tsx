@@ -65,15 +65,22 @@ export default function LoginForm() {
         </p>
       </div>
 
-      {/* Not configured warning */}
+      {/* Not configured warning - redirect to setup */}
       {!isConfigured && (
         <div className="mb-6 p-4 border-2 border-[#F59E0B] bg-[#FFFBEB]">
           <p className="text-sm font-semibold text-[#92400E]">
-            ⚠ Authentication not configured
+            ⚠ Firebase not connected
           </p>
           <p className="mt-1 text-xs text-[#92400E]">
-            Firebase credentials are not set. Please configure environment variables to enable authentication.
+            Please complete the Firebase setup to enable authentication.
           </p>
+          <a
+            href="#/login"
+            onClick={(e) => { e.preventDefault(); window.location.reload(); }}
+            className="mt-2 inline-block text-xs font-bold text-[#2563EB] hover:underline"
+          >
+            Open Setup Wizard →
+          </a>
         </div>
       )}
 

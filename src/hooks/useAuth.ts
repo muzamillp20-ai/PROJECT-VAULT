@@ -10,6 +10,7 @@ import {
   isAuthConfigured,
 } from '../services/authService';
 import { sendLoginThankYouEmail, isEmailConfigured } from '../services/emailService';
+import { isFirebaseConfigured } from '../firebase';
 
 interface UseAuthReturn {
   user: AuthUser | null;
@@ -33,6 +34,12 @@ export function useAuth(): UseAuthReturn {
   const previousUser = useRef<AuthUser | null>(null);
 
   useEffect(() => {
+    // Check if Firebase is configured
+    if (!isFirebaseConfigured()) {
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = subscribeToAuthChanges((authUser) => {
       setUser(authUser);
       setLoading(false);
@@ -52,7 +59,6 @@ export function useAuth(): UseAuthReturn {
 
   const triggerThankYouEmail = async (authUser: AuthUser) => {
     if (!isEmailConfigured()) {
-      // Email API not configured - silently continue
       return;
     }
 
@@ -67,7 +73,6 @@ export function useAuth(): UseAuthReturn {
     if (result.success) {
       setEmailStatus('sent');
       setEmailMessage("You're signed in.");
-      // Clear message after a few seconds
       setTimeout(() => {
         setEmailStatus('idle');
         setEmailMessage(null);
@@ -75,7 +80,6 @@ export function useAuth(): UseAuthReturn {
     } else {
       setEmailStatus('failed');
       setEmailMessage("You're signed in. We couldn't send the welcome email right now.");
-      // Clear message after a few seconds
       setTimeout(() => {
         setEmailStatus('idle');
         setEmailMessage(null);

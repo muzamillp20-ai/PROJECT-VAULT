@@ -7,9 +7,12 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   updateProfile,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
   User,
 } from 'firebase/auth';
-import { auth, isFirebaseConfigured } from './firebaseConfig';
+import { getAuthInstance, isFirebaseConfigured, initializeFirebase } from '../firebase';
 
 export interface AuthUser {
   uid: string;
@@ -60,21 +63,45 @@ function mapAuthError(error: any): string {
       return 'Sign-in popup was blocked. Please allow popups for this site.';
     case 'auth/cancelled-popup-request':
       return 'Sign-in was cancelled.';
+    case 'auth/api-key-not-valid.-please-pass-a-valid-api-key.':
+    case 'auth/invalid-api-key':
+      return 'Firebase configuration is invalid. Please check your API key.';
+    case 'auth/invalid-tenant-id':
+      return 'Firebase configuration is invalid. Please check your project ID.';
     default:
-      return 'An unexpected error occurred. Please try again.';
+      if (code.includes('api-key')) {
+        return 'Firebase configuration is invalid. Please check your credentials.';
+      }
+      return error?.message || 'An unexpected error occurred. Please try again.';
   }
+}
+
+// Ensure Firebase is initialized
+function ensureInitialized(): boolean {
+  if (!isFirebaseConfigured()) return false;
+  const auth = getAuthInstance();
+  return auth !== null;
 }
 
 // Sign in with email and password
 export async function signIn(email: string, password: string): Promise<AuthResult> {
-  if (!isFirebaseConfigured || !auth) {
+  if (!ensureInitialized()) {
     return {
       success: false,
-      error: 'Authentication is not configured. Please set up Firebase credentials.',
+      error: 'Firebase is not configured. Please set up Firebase credentials first.',
     };
   }
 
+  const auth = getAuthInstance();
+  if (!auth) {
+    return { success: false, error: 'Authentication service unavailable.' };
+  }
+
   try {
+    // Set persistence based on "remember me" preference
+    // Default to local persistence (survives browser restart)
+    await setPersistence(auth, browserLocalPersistence);
+    
     const credential = await signInWithEmailAndPassword(auth, email, password);
     return {
       success: true,
@@ -90,19 +117,27 @@ export async function signIn(email: string, password: string): Promise<AuthResul
 
 // Sign up with email and password
 export async function signUp(name: string, email: string, password: string): Promise<AuthResult> {
-  if (!isFirebaseConfigured || !auth) {
+  if (!ensureInitialized()) {
     return {
       success: false,
-      error: 'Authentication is not configured. Please set up Firebase credentials.',
+      error: 'Firebase is not configured. Please set up Firebase credentials first.',
     };
   }
 
+  const auth = getAuthInstance();
+  if (!auth) {
+    return { success: false, error: 'Authentication service unavailable.' };
+  }
+
   try {
+    await setPersistence(auth, browserLocalPersistence);
     const credential = await createUserWithEmailAndPassword(auth, email, password);
+    
     // Update display name
     if (name && credential.user) {
       await updateProfile(credential.user, { displayName: name });
     }
+    
     return {
       success: true,
       user: toAuthUser(credential.user),
@@ -117,14 +152,20 @@ export async function signUp(name: string, email: string, password: string): Pro
 
 // Sign in with Google
 export async function signInWithGoogle(): Promise<AuthResult> {
-  if (!isFirebaseConfigured || !auth) {
+  if (!ensureInitialized()) {
     return {
       success: false,
-      error: 'Authentication is not configured. Please set up Firebase credentials.',
+      error: 'Firebase is not configured. Please set up Firebase credentials first.',
     };
   }
 
+  const auth = getAuthInstance();
+  if (!auth) {
+    return { success: false, error: 'Authentication service unavailable.' };
+  }
+
   try {
+    await setPersistence(auth, browserLocalPersistence);
     const provider = new GoogleAuthProvider();
     const credential = await signInWithPopup(auth, provider);
     return {
@@ -141,8 +182,9 @@ export async function signInWithGoogle(): Promise<AuthResult> {
 
 // Sign out
 export async function signOut(): Promise<AuthResult> {
-  if (!isFirebaseConfigured || !auth) {
-    return { success: false, error: 'Authentication is not configured.' };
+  const auth = getAuthInstance();
+  if (!auth) {
+    return { success: true }; // Already signed out
   }
 
   try {
@@ -158,11 +200,16 @@ export async function signOut(): Promise<AuthResult> {
 
 // Send password reset email
 export async function sendPasswordReset(email: string): Promise<AuthResult> {
-  if (!isFirebaseConfigured || !auth) {
+  if (!ensureInitialized()) {
     return {
       success: false,
-      error: 'Authentication is not configured. Please set up Firebase credentials.',
+      error: 'Firebase is not configured. Please set up Firebase credentials first.',
     };
+  }
+
+  const auth = getAuthInstance();
+  if (!auth) {
+    return { success: false, error: 'Authentication service unavailable.' };
   }
 
   try {
@@ -170,7 +217,6 @@ export async function sendPasswordReset(email: string): Promise<AuthResult> {
     return { success: true };
   } catch (error: any) {
     // For security, don't reveal if email exists
-    // Firebase will return auth/user-not-found but we show generic success
     if (error?.code === 'auth/user-not-found') {
       return { success: true }; // Pretend success for security
     }
@@ -183,15 +229,24 @@ export async function sendPasswordReset(email: string): Promise<AuthResult> {
 
 // Get current user
 export function getCurrentUser(): AuthUser | null {
-  if (!isFirebaseConfigured || !auth) return null;
+  const auth = getAuthInstance();
+  if (!auth) return null;
   const user = auth.currentUser;
   return user ? toAuthUser(user) : null;
 }
 
 // Subscribe to auth state changes
 export function subscribeToAuthChanges(callback: (user: AuthUser | null) => void): () => void {
-  if (!isFirebaseConfigured || !auth) {
-    // If not configured, immediately return null
+  if (!isFirebaseConfigured()) {
+    callback(null);
+    return () => {};
+  }
+
+  // Initialize Firebase if not already done
+  initializeFirebase();
+  
+  const auth = getAuthInstance();
+  if (!auth) {
     callback(null);
     return () => {};
   }
@@ -205,5 +260,5 @@ export function subscribeToAuthChanges(callback: (user: AuthUser | null) => void
 
 // Check if auth is configured
 export function isAuthConfigured(): boolean {
-  return isFirebaseConfigured;
+  return isFirebaseConfigured();
 }
