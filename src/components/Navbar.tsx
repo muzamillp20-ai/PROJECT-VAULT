@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Search, Plus, Home, FolderOpen, Heart, Settings, Code } from 'lucide-react';
+import { Menu, X, Search, Plus, Home, FolderOpen, Heart, Settings, Code, LogIn } from 'lucide-react';
+import UserMenu from './auth/UserMenu';
+import { useAuthContext } from '../contexts/AuthContext';
 
 interface NavbarProps {
   onSearchOpen: () => void;
@@ -11,6 +13,7 @@ export default function Navbar({ onSearchOpen }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, signOut } = useAuthContext();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -29,6 +32,11 @@ export default function Navbar({ onSearchOpen }: NavbarProps) {
     { path: '/favorites', label: 'FAVORITES', icon: Heart },
     { path: '/manage', label: 'MANAGE', icon: Settings },
   ];
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
+  };
 
   return (
     <>
@@ -79,6 +87,19 @@ export default function Navbar({ onSearchOpen }: NavbarProps) {
                 <Plus size={14} />
                 ADD PROJECT
               </Link>
+              
+              {/* User Menu or Login */}
+              {user ? (
+                <UserMenu />
+              ) : (
+                <Link
+                  to="/login"
+                  className="flex items-center gap-2 px-4 py-2.5 text-[#111] text-xs font-bold tracking-wider border-2 border-[#111] hover:bg-[#F7F8FC] transition-colors"
+                >
+                  <LogIn size={14} />
+                  LOGIN
+                </Link>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -96,6 +117,23 @@ export default function Navbar({ onSearchOpen }: NavbarProps) {
         {mobileMenuOpen && (
           <div className="lg:hidden border-t-2 border-[#111] bg-white animate-slide-down">
             <div className="px-4 py-4 space-y-1">
+              {/* User info in mobile menu */}
+              {user && (
+                <div className="flex items-center gap-3 px-4 py-3 mb-2 border-b border-[#D1D5DB]">
+                  {user.photoURL ? (
+                    <img src={user.photoURL} alt="" className="w-10 h-10 rounded-full border-2 border-[#111] object-cover" />
+                  ) : (
+                    <div className="w-10 h-10 bg-[#2563EB] text-white flex items-center justify-center text-xs font-bold font-mono border-2 border-[#111]">
+                      {(user.displayName || user.email || 'U').charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-semibold">{user.displayName || user.email}</p>
+                    <p className="text-[10px] font-mono text-[#555]">{user.email}</p>
+                  </div>
+                </div>
+              )}
+
               {navLinks.map(link => {
                 const Icon = link.icon;
                 return (
@@ -127,6 +165,34 @@ export default function Navbar({ onSearchOpen }: NavbarProps) {
                 <Plus size={16} />
                 ADD PROJECT
               </Link>
+
+              {/* Mobile auth actions */}
+              {user ? (
+                <>
+                  <Link
+                    to="/settings"
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-semibold tracking-wider text-[#555] hover:text-[#111] hover:bg-[#F7F8FC]"
+                  >
+                    <Settings size={16} />
+                    SETTINGS
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-semibold tracking-wider text-[#DC2626] hover:bg-[#FEF2F2] w-full"
+                  >
+                    <LogIn size={16} />
+                    LOG OUT
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/login"
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-semibold tracking-wider text-[#555] hover:text-[#111] hover:bg-[#F7F8FC]"
+                >
+                  <LogIn size={16} />
+                  LOGIN
+                </Link>
+              )}
             </div>
           </div>
         )}
