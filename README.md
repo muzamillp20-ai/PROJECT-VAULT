@@ -8,6 +8,9 @@ A premium personal project archive web application built with React, TypeScript,
 ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat-square&logo=tailwindcss)
+![GitHub Pages](https://img.shields.io/badge/GitHub-Pages-181717?style=flat-square&logo=github)
+
+**Live Demo**: https://muzamillp20-ai.github.io/PROJECT-VAULT/
 
 ---
 
@@ -65,8 +68,8 @@ A premium personal project archive web application built with React, TypeScript,
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/project-vault.git
-cd project-vault
+git clone https://github.com/muzamillp20-ai/PROJECT-VAULT.git
+cd PROJECT-VAULT
 
 # Install dependencies
 npm install
@@ -88,6 +91,30 @@ The app will open at `http://localhost:5173`
 **Note**: All data is stored in your browser's localStorage. Make sure to use the Export feature regularly to backup your projects.
 
 ---
+
+## 🛠️ Technology Stack
+
+- **Frontend Framework**: React 18
+- **Build Tool**: Vite 6
+- **Language**: TypeScript 5
+- **Styling**: Tailwind CSS 4
+- **Routing**: React Router DOM 6 (HashRouter for GitHub Pages)
+- **Icons**: Lucide React
+- **QR Codes**: qrcode library
+- **Authentication**: Client-side localStorage
+- **Data Storage**: Browser localStorage
+
+## 💾 Data Storage
+
+**Important**: All project data and user accounts are stored in your browser's localStorage. This means:
+
+- Data is **device-specific** and **browser-specific**
+- Data is **not synchronized** across devices
+- Clearing browser data will **delete all projects and accounts**
+- Use the **Export** feature regularly to backup your projects
+- Use the **Import** feature to restore from backups
+
+For multi-device sync, consider integrating Firebase, Supabase, or another backend service.
 
 ## 📁 Project Structure
 
@@ -187,6 +214,29 @@ The app uses a simple client-side authentication system:
 3. Set output directory: `dist`
 4. Deploy
 
+### GitHub Pages (Automatic)
+
+This project includes a GitHub Actions workflow for automatic deployment to GitHub Pages.
+
+**Setup Steps:**
+
+1. Go to your repository on GitHub
+2. Navigate to **Settings** → **Pages**
+3. Under **Build and deployment**, select **Source: GitHub Actions**
+4. Push to the `main` branch - the workflow will automatically build and deploy
+
+**Manual Deployment:**
+
+```bash
+# Build the project
+npm run build
+
+# The dist folder contains the production build
+# Deploy this folder to GitHub Pages
+```
+
+**Live Demo:** https://muzamillp20-ai.github.io/PROJECT-VAULT/
+
 ---
 
 ## 🎨 Design System
@@ -255,6 +305,35 @@ Contributions welcome! Please:
 ## 📄 License
 
 MIT License - feel free to use this for your own project vault!
+
+---
+
+## 🚀 Deployment Status
+
+**Repository**: https://github.com/muzamillp20-ai/PROJECT-VAULT  
+**Live Website**: https://muzamillp20-ai.github.io/PROJECT-VAULT/  
+**Branch**: `main`  
+**Build Status**: ✅ Production build successful  
+**Deployment**: GitHub Pages via GitHub Actions
+
+### Manual Steps Required
+
+After pushing to GitHub, you need to:
+
+1. **Enable GitHub Pages**:
+   - Go to repository Settings → Pages
+   - Under "Build and deployment", select Source: **GitHub Actions**
+
+2. **Verify Deployment**:
+   - Push to `main` branch
+   - Check Actions tab for workflow run
+   - Wait for deployment to complete (~2-3 minutes)
+   - Visit https://muzamillp20-ai.github.io/PROJECT-VAULT/
+
+3. **Custom Domain** (Optional):
+   - Add a `CNAME` file with your domain
+   - Update DNS records
+   - Enable HTTPS in repository settings
 
 ---
 
